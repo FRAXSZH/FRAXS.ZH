@@ -44,7 +44,7 @@
     .abril {
       font-family: 'Courier New', monospace;
       font-size: 2rem;
-      color: #87CEFA; /* Celeste claro */
+      color: #FF007; /* Celeste claro */
       margin-top: 0.5rem;
       animation: fadeIn 2s ease-in-out infinite alternate;
     }
@@ -73,8 +73,8 @@
 <canvas id="canvas"></canvas>
 <div class="overlay">
   <div style="text-align: center;">
-    <div class="center-message">TE AMO ❤</div>
-    <div class="abril">Y A N E L A</div>
+    <div class="center-message">GEY</div>
+    <div class="abril">Y A N E L A TROLA</div>
   </div>
 </div>
 
@@ -84,7 +84,7 @@
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  const text = "TE AMO";
+  const text = "SOLO TE USA ";
   const fontSize = 16;
   const columns = Math.floor(canvas.width / (fontSize * 4));
   const drops = new Array(columns).fill(1);
@@ -128,7 +128,7 @@
     particles.forEach((p, index) => {
       ctx.globalAlpha = p.alpha;
       ctx.font = p.size + "px monospace";
-      ctx.fillStyle = "#ff4d6d";
+      ctx.fillStyle = "#00FFFF";
       ctx.fillText("TE AMO", p.x, p.y);
       p.x += p.vx;
       p.y += p.vy;
