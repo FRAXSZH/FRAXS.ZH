@@ -1,13 +1,14 @@
-<!DOCTYPE html><html lang="es">
+<!DOCTYPE html>
+<html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Desencriptador FRAXS ZH3.0</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Desencriptador .HC - FRAXS ZH</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to right, #0f0c29, #302b63, #24243e);
-      color: #fff;
+      background: linear-gradient(to right, #1d1d1d, #2c3e50);
+      color: #00ffe1;
       margin: 0;
       padding: 0;
       display: flex;
@@ -15,173 +16,107 @@
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-    }header {
-  text-align: center;
-  padding: 20px;
-  animation: fadeInDown 1s ease-in-out;
-}
+      text-align: center;
+    }
 
-h1 {
-  margin: 0;
-  font-size: 2.5rem;
-  color: #00ffe1;
-  text-shadow: 2px 2px 4px #000;
-}
+    h1 {
+      margin-top: 30px;
+      font-size: 2rem;
+      text-shadow: 1px 1px 4px #000;
+    }
 
-.container {
-  background: rgba(0, 0, 0, 0.4);
-  padding: 30px;
-  border-radius: 15px;
-  box-shadow: 0 0 15px #00ffe1;
-  text-align: center;
-  animation: fadeInUp 1s ease-in-out;
-  width: 90%;
-  max-width: 800px;
-}
+    label {
+      background-color: #00ffe1;
+      color: #000;
+      padding: 12px 24px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 20px;
+      display: inline-block;
+    }
 
-input[type="file"] {
-  display: none;
-}
+    input[type="file"] {
+      display: none;
+    }
 
-label {
-  background: #00ffe1;
-  color: #000;
-  padding: 12px 25px;
-  border-radius: 30px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background 0.3s;
-  display: inline-block;
-}
+    .progress {
+      margin-top: 20px;
+      width: 80%;
+      max-width: 400px;
+      background: #333;
+      border-radius: 20px;
+      overflow: hidden;
+    }
 
-label:hover {
-  background: #00bfa5;
-}
+    .progress-bar {
+      height: 20px;
+      width: 0%;
+      background: #00ffe1;
+      transition: width 1s;
+    }
 
-pre {
-  text-align: left;
-  max-height: 400px;
-  overflow-y: auto;
-  background: #111;
-  padding: 15px;
-  border-radius: 10px;
-  margin-top: 20px;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
-
-.file-info {
-  margin-top: 10px;
-  font-size: 0.9rem;
-  color: #ccc;
-}
-
-.progress {
-  margin-top: 20px;
-  width: 100%;
-  background: #333;
-  border-radius: 20px;
-  overflow: hidden;
-  height: 20px;
-  display: none;
-}
-
-.progress-bar {
-  height: 100%;
-  background: #00ffe1;
-  width: 0%;
-  transition: width 0.3s ease;
-}
-
-@keyframes fadeInDown {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
+    pre {
+      margin-top: 30px;
+      background: #111;
+      color: #00ffd5;
+      padding: 20px;
+      width: 90%;
+      max-width: 800px;
+      overflow-x: auto;
+      border-radius: 10px;
+      text-align: left;
+      white-space: pre-wrap;
+    }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Desencriptador FRAXS ZH3.0</h1>
-  </header>
-  <div class="container">
-    <label for="fileInput">AGREGAR ARCHIVO</label>
-    <input type="file" id="fileInput" />
-    <div class="file-info" id="fileInfo"></div>
-    <div class="progress" id="progress">
-      <div class="progress-bar" id="progressBar"></div>
-    </div>
-    <pre id="output"></pre>
-  </div>  <script>
-    const input = document.getElementById('fileInput');
-    const output = document.getElementById('output');
-    const fileInfo = document.getElementById('fileInfo');
-    const progress = document.getElementById('progress');
-    const progressBar = document.getElementById('progressBar');
+  <h1>FRAXS ZH | Desencriptador .HC</h1>
+  <label for="hcFile">Seleccionar archivo .hc</label>
+  <input type="file" id="hcFile" accept=".hc" />
+  
+  <div class="progress">
+    <div class="progress-bar" id="bar"></div>
+  </div>
 
-    function updateProgress(porcentaje) {
-      progress.style.display = 'block';
-      progressBar.style.width = `${porcentaje}%`;
-    }
+  <pre id="output">Esperando archivo .hc...</pre>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script>
+    const input = document.getElementById('hcFile');
+    const output = document.getElementById('output');
+    const bar = document.getElementById('bar');
 
     input.addEventListener('change', async () => {
       const file = input.files[0];
-      if (!file) return;
+      if (!file || !file.name.endsWith('.hc')) {
+        output.textContent = 'Archivo no válido. Por favor sube un archivo .hc';
+        return;
+      }
 
-      fileInfo.textContent = `Archivo seleccionado: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
-      output.textContent = '';
-      updateProgress(10);
+      output.textContent = 'Cargando archivo...';
+      bar.style.width = '30%';
 
-      const reader = new FileReader();
+      try {
+        const zip = await JSZip.loadAsync(file);
+        bar.style.width = '60%';
+        let result = '';
 
-      const ext = file.name.split('.').pop().toLowerCase();
-      const supportedText = ['txt', 'css', 'html', 'js', 'json', 'xml', 'md', 'csv'];
-      const supportedZip = ['zip', 'rar', 'apk', 'docx'];
-
-      if (supportedText.includes(ext)) {
-        updateProgress(30);
-        reader.onload = function (e) {
-          updateProgress(100);
-          output.textContent = e.target.result;
-        };
-        reader.readAsText(file);
-      } else if (supportedZip.includes(ext)) {
-        updateProgress(30);
-        const JSZipScript = document.createElement('script');
-        JSZipScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
-        document.body.appendChild(JSZipScript);
-
-        JSZipScript.onload = async () => {
-          try {
-            updateProgress(50);
-            const zip = await JSZip.loadAsync(file);
-            let extracted = '';
-            const files = Object.keys(zip.files);
-
-            for (let i = 0; i < files.length; i++) {
-              const name = files[i];
-              const zipFile = zip.files[name];
-              if (!zipFile.dir) {
-                const content = await zipFile.async('string');
-                extracted += `\n--- ${name} ---\n${content}\n`;
-              }
-              updateProgress(50 + Math.round((i / files.length) * 50));
-            }
-
-            output.textContent = extracted || 'No se pudo extraer contenido visible.';
-          } catch (err) {
-            output.textContent = '⚠️ Error al descomprimir: ' + err.message + '\n\nEste archivo podría estar cifrado o no ser compatible.';
+        for (const fileName of Object.keys(zip.files)) {
+          const zipFile = zip.files[fileName];
+          if (!zipFile.dir) {
+            const content = await zipFile.async('string');
+            result += `--- ${fileName} ---\n${content}\n\n`;
           }
-        };
-      } else {
-        updateProgress(100);
-        output.textContent = '⚠️ Tipo de archivo no compatible para vista previa o extracción.';
+        }
+
+        output.textContent = result || 'No se encontró contenido visible.';
+        bar.style.width = '100%';
+      } catch (err) {
+        output.textContent = '❌ Error al leer el archivo .hc: ' + err.message;
+        bar.style.width = '0%';
       }
     });
-  </script></body>
+  </script>
+</body>
 </html>
