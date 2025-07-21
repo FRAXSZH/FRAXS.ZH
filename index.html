@@ -35,6 +35,8 @@ h1 {
   box-shadow: 0 0 15px #00ffe1;
   text-align: center;
   animation: fadeInUp 1s ease-in-out;
+  width: 90%;
+  max-width: 800px;
 }
 
 input[type="file"] {
@@ -49,6 +51,7 @@ label {
   cursor: pointer;
   font-weight: bold;
   transition: background 0.3s;
+  display: inline-block;
 }
 
 label:hover {
@@ -57,12 +60,20 @@ label:hover {
 
 pre {
   text-align: left;
-  max-height: 300px;
+  max-height: 400px;
   overflow-y: auto;
   background: #111;
   padding: 15px;
   border-radius: 10px;
   margin-top: 20px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.file-info {
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: #ccc;
 }
 
 @keyframes fadeInDown {
@@ -84,28 +95,58 @@ pre {
   <div class="container">
     <label for="fileInput">AGREGAR ARCHIVO</label>
     <input type="file" id="fileInput" />
+    <div class="file-info" id="fileInfo"></div>
     <pre id="output"></pre>
   </div>  <script>
     const input = document.getElementById('fileInput');
     const output = document.getElementById('output');
+    const fileInfo = document.getElementById('fileInfo');
 
     input.addEventListener('change', async () => {
       const file = input.files[0];
       if (!file) return;
 
+      fileInfo.textContent = `Archivo seleccionado: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
+      output.textContent = 'Cargando archivo...';
+
       const reader = new FileReader();
 
-      reader.onload = function (e) {
-        const content = e.target.result;
-        // Solo texto plano por ahora (para .txt, .css, .json, etc.)
-        output.textContent = content;
-      };
+      const ext = file.name.split('.').pop().toLowerCase();
+      const supportedText = ['txt', 'css', 'html', 'js', 'json', 'xml', 'md', 'csv'];
+      const supportedZip = ['zip', 'rar', 'apk', 'docx'];
 
-      reader.onerror = function () {
-        output.textContent = 'Error al leer el archivo.';
-      };
+      if (supportedText.includes(ext)) {
+        reader.onload = function (e) {
+          output.textContent = e.target.result;
+        };
+        reader.readAsText(file);
+      } else if (supportedZip.includes(ext)) {
+        const JSZipScript = document.createElement('script');
+        JSZipScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+        document.body.appendChild(JSZipScript);
 
-      reader.readAsText(file);
+        JSZipScript.onload = async () => {
+          try {
+            const zip = await JSZip.loadAsync(file);
+            let extracted = '';
+            const files = Object.keys(zip.files);
+
+            for (const name of files) {
+              const zipFile = zip.files[name];
+              if (!zipFile.dir) {
+                const content = await zipFile.async('string');
+                extracted += `\n--- ${name} ---\n${content}\n`;
+              }
+            }
+
+            output.textContent = extracted || 'No se pudo extraer contenido visible.';
+          } catch (err) {
+            output.textContent = 'Error al descomprimir: ' + err.message;
+          }
+        };
+      } else {
+        output.textContent = 'Tipo de archivo no compatible para vista previa.';
+      }
     });
   </script></body>
 </html>
