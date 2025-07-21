@@ -1,1 +1,111 @@
-<h1><font color="red">Salí de acá</h1></font>
+<!DOCTYPE html><html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Desencriptador FRAXS ZH</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #0f0c29, #302b63, #24243e);
+      color: #fff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }header {
+  text-align: center;
+  padding: 20px;
+  animation: fadeInDown 1s ease-in-out;
+}
+
+h1 {
+  margin: 0;
+  font-size: 2.5rem;
+  color: #00ffe1;
+  text-shadow: 2px 2px 4px #000;
+}
+
+.container {
+  background: rgba(0, 0, 0, 0.4);
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 0 15px #00ffe1;
+  text-align: center;
+  animation: fadeInUp 1s ease-in-out;
+}
+
+input[type="file"] {
+  display: none;
+}
+
+label {
+  background: #00ffe1;
+  color: #000;
+  padding: 12px 25px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+label:hover {
+  background: #00bfa5;
+}
+
+pre {
+  text-align: left;
+  max-height: 300px;
+  overflow-y: auto;
+  background: #111;
+  padding: 15px;
+  border-radius: 10px;
+  margin-top: 20px;
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Desencriptador FRAXS ZH</h1>
+  </header>
+  <div class="container">
+    <label for="fileInput">AGREGAR ARCHIVO</label>
+    <input type="file" id="fileInput" />
+    <pre id="output"></pre>
+  </div>  <script>
+    const input = document.getElementById('fileInput');
+    const output = document.getElementById('output');
+
+    input.addEventListener('change', async () => {
+      const file = input.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+
+      reader.onload = function (e) {
+        const content = e.target.result;
+        // Solo texto plano por ahora (para .txt, .css, .json, etc.)
+        output.textContent = content;
+      };
+
+      reader.onerror = function () {
+        output.textContent = 'Error al leer el archivo.';
+      };
+
+      reader.readAsText(file);
+    });
+  </script></body>
+</html>
