@@ -2,7 +2,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Desencriptador FRAXS ZH2.0</title>
+  <title>Desencriptador FRAXS ZH</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -76,6 +76,23 @@ pre {
   color: #ccc;
 }
 
+.progress {
+  margin-top: 20px;
+  width: 100%;
+  background: #333;
+  border-radius: 20px;
+  overflow: hidden;
+  height: 20px;
+  display: none;
+}
+
+.progress-bar {
+  height: 100%;
+  background: #00ffe1;
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
 @keyframes fadeInDown {
   from { opacity: 0; transform: translateY(-20px); }
   to { opacity: 1; transform: translateY(0); }
@@ -90,24 +107,35 @@ pre {
 </head>
 <body>
   <header>
-    <h1>Desencriptador FRAXS ZH2.0</h1>
+    <h1>Desencriptador FRAXS ZH</h1>
   </header>
   <div class="container">
     <label for="fileInput">AGREGAR ARCHIVO</label>
     <input type="file" id="fileInput" />
     <div class="file-info" id="fileInfo"></div>
+    <div class="progress" id="progress">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
     <pre id="output"></pre>
   </div>  <script>
     const input = document.getElementById('fileInput');
     const output = document.getElementById('output');
     const fileInfo = document.getElementById('fileInfo');
+    const progress = document.getElementById('progress');
+    const progressBar = document.getElementById('progressBar');
+
+    function updateProgress(porcentaje) {
+      progress.style.display = 'block';
+      progressBar.style.width = `${porcentaje}%`;
+    }
 
     input.addEventListener('change', async () => {
       const file = input.files[0];
       if (!file) return;
 
       fileInfo.textContent = `Archivo seleccionado: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
-      output.textContent = 'Cargando archivo...';
+      output.textContent = '';
+      updateProgress(10);
 
       const reader = new FileReader();
 
@@ -116,36 +144,43 @@ pre {
       const supportedZip = ['zip', 'rar', 'apk', 'docx'];
 
       if (supportedText.includes(ext)) {
+        updateProgress(30);
         reader.onload = function (e) {
+          updateProgress(100);
           output.textContent = e.target.result;
         };
         reader.readAsText(file);
       } else if (supportedZip.includes(ext)) {
+        updateProgress(30);
         const JSZipScript = document.createElement('script');
         JSZipScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
         document.body.appendChild(JSZipScript);
 
         JSZipScript.onload = async () => {
           try {
+            updateProgress(50);
             const zip = await JSZip.loadAsync(file);
             let extracted = '';
             const files = Object.keys(zip.files);
 
-            for (const name of files) {
+            for (let i = 0; i < files.length; i++) {
+              const name = files[i];
               const zipFile = zip.files[name];
               if (!zipFile.dir) {
                 const content = await zipFile.async('string');
                 extracted += `\n--- ${name} ---\n${content}\n`;
               }
+              updateProgress(50 + Math.round((i / files.length) * 50));
             }
 
             output.textContent = extracted || 'No se pudo extraer contenido visible.';
           } catch (err) {
-            output.textContent = 'Error al descomprimir: ' + err.message;
+            output.textContent = '⚠️ Error al descomprimir: ' + err.message + '\n\nEste archivo podría estar cifrado o no ser compatible.';
           }
         };
       } else {
-        output.textContent = 'Tipo de archivo no compatible para vista previa.';
+        updateProgress(100);
+        output.textContent = '⚠️ Tipo de archivo no compatible para vista previa o extracción.';
       }
     });
   </script></body>
